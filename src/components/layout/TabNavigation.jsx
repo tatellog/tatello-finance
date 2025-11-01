@@ -5,7 +5,8 @@ export const TabNavigation = ({ activeTab, onTabChange }) => {
   const tabs = [
     { id: TABS.OVERVIEW, label: '📊 Resumen' },
     { id: TABS.DEBTS, label: '💳 Deudas' },
-    { id: TABS.PAYMENTS, label: '💰 Pagos' }
+    { id: TABS.PAYMENTS, label: '💰 Pagos' },
+    { id: TABS.CHARTS, label: '📈 Gráficas' } // ← NUEVO TAB
   ];
 
   return (

@@ -56,7 +56,8 @@ export const MONTHS = {
 export const TABS = {
   OVERVIEW: 'overview',
   DEBTS: 'debts',
-  PAYMENTS: 'payments'
+  PAYMENTS: 'payments',
+  CHARTS: 'charts' // ← NUEVO TAB
 };
 
 export const LOCAL_STORAGE_KEYS = {
