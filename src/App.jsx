@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Header } from './components/layout/Header';
 import { TabNavigation } from './components/layout/TabNavigation';
 import { StatsGrid } from './components/dashboard/StatsGrid';
+import { EditableResources } from './components/dashboard/EditableResources';
 import { MonthlyPlan } from './components/plans/MonthlyPlan';
 import { DebtTable } from './components/debts/DebtTable';
 import { PaymentsList } from './components/payments/PaymentsList';
@@ -24,10 +25,10 @@ import {
 export default function App() {
   const [editMode, setEditMode] = useState(false);
   const [showPrivate, setShowPrivate] = useState(true);
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'debts', 'payments', 'charts'
+  const [activeTab, setActiveTab] = useState('overview');
   
-  const [config] = useConfigStorage(initialConfig);
-  const [resources] = useResourcesStorage(initialResources);
+  const [config, setConfig] = useConfigStorage(initialConfig);
+  const [resources, setResources] = useResourcesStorage(initialResources);
   const [debts, setDebts] = useDebtsStorage(initialDebts);
   const [payments, setPayments] = usePaymentsStorage(initialPayments);
 
@@ -41,6 +42,20 @@ export default function App() {
       }
       return debt;
     }));
+  };
+
+  const handleUpdateDebt = (id, field, value) => {
+    setDebts(debts.map(debt => 
+      debt.id === id ? { ...debt, [field]: value } : debt
+    ));
+  };
+
+  const handleUpdateResource = (field, value) => {
+    setResources({ ...resources, [field]: value });
+  };
+
+  const handleUpdateConfig = (field, value) => {
+    setConfig({ ...config, [field]: value });
   };
 
   const handleAddPayment = () => {
@@ -84,6 +99,16 @@ export default function App() {
           onShare={handleShare}
         />
 
+        {editMode && (
+          <EditableResources
+            resources={resources}
+            config={config}
+            editMode={editMode}
+            onUpdateResource={handleUpdateResource}
+            onUpdateConfig={handleUpdateConfig}
+          />
+        )}
+
         <StatsGrid 
           stats={stats}
           resources={resources}
@@ -109,7 +134,9 @@ export default function App() {
           <DebtTable
             debts={debts}
             showPrivate={showPrivate}
+            editMode={editMode}
             onToggleStatus={handleToggleDebtStatus}
+            onUpdate={handleUpdateDebt}
           />
         )}
 
