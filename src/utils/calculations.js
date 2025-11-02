@@ -59,6 +59,7 @@ export const calculateStats = (debts, payments, resources, config) => {
   const wiseMXN = resources.wiseUSD * config.exchangeRate;
   const disponibleDespuesPlan = resources.novDisponible - planNovTotal;
   const paymentPercentage = calculatePaymentPercentage(monthlyPayments, config.monthlyIncome);
+  const available = config.monthlyIncome - monthlyPayments; // ← NUEVA LÍNEA
   
   return {
     totalDebt,
@@ -72,6 +73,7 @@ export const calculateStats = (debts, payments, resources, config) => {
     activeCount,
     wiseMXN,
     disponibleDespuesPlan,
-    paymentPercentage
+    paymentPercentage,
+    available  // ← NUEVA LÍNEA
   };
 };
