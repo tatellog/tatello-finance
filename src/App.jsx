@@ -7,6 +7,7 @@ import { MonthlyPlan } from './components/plans/MonthlyPlan';
 import { DebtTable } from './components/debts/DebtTable';
 import { PaymentsList } from './components/payments/PaymentsList';
 import { ChartsTab } from './components/charts/ChartsTab';
+import { LiquidationModal } from './components/debts/LiquidationModal';
 import { 
   useDebtsStorage, 
   usePaymentsStorage, 
@@ -26,6 +27,7 @@ export default function App() {
   const [editMode, setEditMode] = useState(false);
   const [showPrivate, setShowPrivate] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
+  const [liquidatingDebt, setLiquidatingDebt] = useState(null);
   
   const [config, setConfig] = useConfigStorage(initialConfig);
   const [resources, setResources] = useResourcesStorage(initialResources);
@@ -35,13 +37,45 @@ export default function App() {
   const stats = calculateStats(debts, payments, resources, config);
 
   const handleToggleDebtStatus = (id) => {
-    setDebts(debts.map(debt => {
-      if (debt.id === id) {
-        const newStatus = debt.status === 'liquidado' ? 'activo' : 'liquidado';
-        return { ...debt, status: newStatus };
-      }
-      return debt;
-    }));
+    const debt = debts.find(d => d.id === id);
+    
+    // Si la deuda está activa y la queremos liquidar, mostrar modal
+    if (debt.status !== 'liquidado') {
+      setLiquidatingDebt(debt);
+    } else {
+      // Si está liquidada y queremos reactivarla
+      setDebts(debts.map(d => 
+        d.id === id ? { ...d, status: 'activo' } : d
+      ));
+    }
+  };
+
+  const handleConfirmLiquidation = ({ updatedResources, source, amount, debtId }) => {
+    // Actualizar recursos
+    setResources(updatedResources);
+
+    // Marcar deuda como liquidada
+    setDebts(debts.map(debt => 
+      debt.id === debtId ? { ...debt, status: 'liquidado' } : debt
+    ));
+
+    // Registrar el pago automáticamente
+    const newPayment = {
+      id: `p${Date.now()}`,
+      date: getTodayDate(),
+      entity: liquidatingDebt.entity,
+      amount: amount,
+      type: 'liquidación',
+      status: 'completado',
+      source: source === 'novDisponible' ? 'Disponible Nov' : 'Wise USD'
+    };
+    setPayments([newPayment, ...payments]);
+
+    // Cerrar modal
+    setLiquidatingDebt(null);
+
+    // Mostrar notificación de éxito
+    alert(`✅ ¡Deuda liquidada!\n\n${liquidatingDebt.entity}: $${amount.toLocaleString('es-MX')}\nFuente: ${source === 'novDisponible' ? 'Disponible Noviembre' : 'Wise USD'}`);
   };
 
   const handleUpdateDebt = (id, field, value) => {
@@ -157,6 +191,17 @@ export default function App() {
             stats={stats}
             resources={resources}
             config={config}
+          />
+        )}
+
+        {/* Liquidation Modal */}
+        {liquidatingDebt && (
+          <LiquidationModal
+            debt={liquidatingDebt}
+            resources={resources}
+            config={config}
+            onConfirm={handleConfirmLiquidation}
+            onCancel={() => setLiquidatingDebt(null)}
           />
         )}
 
