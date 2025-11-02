@@ -5,6 +5,7 @@ import { StatsGrid } from './components/dashboard/StatsGrid';
 import { MonthlyPlan } from './components/plans/MonthlyPlan';
 import { DebtTable } from './components/debts/DebtTable';
 import { PaymentsList } from './components/payments/PaymentsList';
+import { ChartsTab } from './components/charts/ChartsTab';
 import { 
   useDebtsStorage, 
   usePaymentsStorage, 
@@ -13,7 +14,6 @@ import {
 } from './hooks/useLocalStorage';
 import { calculateStats } from './utils/calculations';
 import { getTodayDate } from './utils/formatters';
-import { TABS } from './utils/constants';
 import { 
   initialConfig, 
   initialResources, 
@@ -24,7 +24,7 @@ import {
 export default function App() {
   const [editMode, setEditMode] = useState(false);
   const [showPrivate, setShowPrivate] = useState(true);
-  const [activeTab, setActiveTab] = useState(TABS.OVERVIEW);
+  const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'debts', 'payments', 'charts'
   
   const [config] = useConfigStorage(initialConfig);
   const [resources] = useResourcesStorage(initialResources);
@@ -68,7 +68,7 @@ export default function App() {
   const handleShare = () => {
     const url = window.location.href;
     navigator.clipboard.writeText(url);
-    alert('¡Link copiado! Compártelo con tu hermana:\\n\\n' + url);
+    alert('¡Link copiado! Compártelo con tu hermana:\n\n' + url);
   };
 
   return (
@@ -96,7 +96,7 @@ export default function App() {
           onTabChange={setActiveTab}
         />
 
-        {activeTab === TABS.OVERVIEW && (
+        {activeTab === 'overview' && (
           <MonthlyPlan
             debts={debts}
             resources={resources}
@@ -105,7 +105,7 @@ export default function App() {
           />
         )}
 
-        {activeTab === TABS.DEBTS && (
+        {activeTab === 'debts' && (
           <DebtTable
             debts={debts}
             showPrivate={showPrivate}
@@ -113,13 +113,23 @@ export default function App() {
           />
         )}
 
-        {activeTab === TABS.PAYMENTS && (
+        {activeTab === 'payments' && (
           <PaymentsList
             payments={payments}
             totalPaid={stats.totalPaid}
             onAdd={handleAddPayment}
             onUpdate={handleUpdatePayment}
             onDelete={handleDeletePayment}
+          />
+        )}
+
+        {activeTab === 'charts' && (
+          <ChartsTab
+            debts={debts}
+            payments={payments}
+            stats={stats}
+            resources={resources}
+            config={config}
           />
         )}
 
